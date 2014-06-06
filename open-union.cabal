@@ -1,0 +1,33 @@
+name:               open-union
+version:            0.0.0
+synopsis:           Extensible, type-safe unions.
+description:        Extensible, type-safe unions. This package is very new and likely to change.
+category:           Data
+license:            MIT
+author:             Ben Foppa
+homepage:           https://github.com/RobotGymnast/open-union
+maintainer:         benjamin.foppa@gmail.com
+build-type:         Simple
+cabal-version:      >= 1.9.2
+
+library
+    hs-source-dirs:   .
+    ghc-options:      -Wall
+    exposed-modules:
+                  Data.OpenUnion
+                  Data.OpenUnion.Internal
+
+    build-depends : base == 4.*
+                  , void == 0.6.*
+
+executable example
+    hs-source-dirs:   .
+    main-is: example.hs
+    ghc-options: -Wall -fllvm -O2
+    build-depends : base == 4.*
+                  , open-union
+                  , void
+
+source-repository head
+  type: git
+  location: https://github.com/RobotGymnast/open-union.git

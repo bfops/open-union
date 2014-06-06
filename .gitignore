@@ -1,0 +1,8 @@
+*.sw[a-z]
+*~
+*.ignore
+*.ignore.*
+cabal.sandbox.config
+
+.cabal-sandbox
+dist
