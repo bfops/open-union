@@ -29,6 +29,8 @@ which prints:
     list length: 2
 
 ## N.B.
+Terminating the `Union` parameter with `Void` is necessary.
+
 Casting to an unrelated type does not cause errors;
 In the above example,`showMyUnion` contains a `String` case despite `MyUnion` not containing
 `String` - superfluous cases are ignored, for the time being.
