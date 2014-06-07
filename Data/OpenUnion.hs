@@ -1,3 +1,4 @@
+-- | Flexible, type-safe open unions.
 module Data.OpenUnion
     ( Union
     , liftUnion

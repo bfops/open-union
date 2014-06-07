@@ -1,3 +1,4 @@
+-- | Exposed internals for Data.OpenUnion
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE TypeFamilies #-}
@@ -21,17 +22,21 @@ module Data.OpenUnion.Internal
 import Data.Dynamic
 import Data.Void
 
--- | Heterogenous list
+-- | The @(:)@ operator to construct a type-level heterogenous list.
+-- Use `Void` to terminate the list.
 data a :| s
 infixr 8 :|
 
--- | The @Union@ type - its parameter is a list of types (using `(:|)`),
--- denoting what this @Union@ might contain. It MUST be one of those types.
+-- | The @Union@ type - the phantom parameter @s@ is a list of types
+-- (using `(:|)` as @(:)@ and `Void` as @[]@),
+-- denoting what this @Union@ might contain.
+-- The value contained is one of those types.
 newtype Union s = Union Dynamic
 
 -- general note: try to keep from re-constructing Unions if an existing one
 -- can just be type-coerced.
 
+-- | Typeclass for lifting values to @Union@s.
 class Typeable a => LiftToUnion s a where
   liftUnion :: a -> Union s
   liftUnion = Union . toDyn
@@ -40,17 +45,20 @@ class Typeable a => LiftToUnion s a where
 instance Typeable a => LiftToUnion (a :| s) a
 instance LiftToUnion s a => LiftToUnion (a' :| s) a
 
+-- | Remove a type from anywhere in the list.
 type family s :\ a where
     Void :\ a = Void
     (a :| s) :\ a = s :\ a
     (a' :| s) :\ a = a' :| (s :\ a)
 
+-- | There exists a @Subset s s'@ instance if every type in the list @s@
+-- has a @`LiftToUnion` s'@ instance.
 class Subset s s'
 instance Subset Void s
 instance Subset s s
 instance (Subset s s', LiftToUnion s' a) => Subset (a :| s) s'
 
--- | `restrict` in continuation passing style.
+-- | `restrict` in right-fixable style.
 (@>) :: Typeable a => (a -> b) -> (Union (s :\ a) -> b) -> Union s -> b
 r @> l = either l r . restrict
 infixr 2 @>
