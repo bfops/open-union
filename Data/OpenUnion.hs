@@ -1,13 +1,11 @@
 module Data.OpenUnion
     ( Union
     , liftUnion
-    , (:|) (..)
+    , (:|)
     , (:\)
     , (@>)
     , reunion
     , restrict
-    , restrictMany
-    , restrictEntirely
     , typesExhausted
     , Void
     ) where
