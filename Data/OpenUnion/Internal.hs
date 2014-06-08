@@ -42,19 +42,22 @@ class Typeable a => LiftToUnion s a where
   liftUnion = Union . toDyn
   {-# INLINE liftUnion #-}
 
+instance Typeable a => LiftToUnion a a
 instance Typeable a => LiftToUnion (a :| s) a
 instance LiftToUnion s a => LiftToUnion (a' :| s) a
 
 -- | Remove a type from anywhere in the list.
 type family s :\ a where
-    Void :\ a = Void
+    a :\ a = Void
     (a :| s) :\ a = s :\ a
     (a' :| s) :\ a = a' :| (s :\ a)
+    a :\ b = a
 
 -- | There exists a @s :< s'@ instance if every type in the list @s@
 -- has a @`LiftToUnion` s'@ instance.
 class (:<) s s'
 instance Void :< s
+instance LiftToUnion s a => a :< s
 instance (s :< s', LiftToUnion s' a) => (a :| s) :< s'
 
 -- | `restrict` in right-fixable style.

@@ -17,8 +17,7 @@ description:
     > {-# LANGUAGE ScopedTypeVariables #-}
     > import Data.OpenUnion
     .
-    > -- terminating with `Void` is necessary.
-    > type MyUnion = Union (Char :| Int :| [()] :| Void)
+    > type MyUnion = Union (Char :| Int :| [()])
     .
     > showMyUnion :: MyUnion -> String
     > showMyUnion
