@@ -1,8 +1,8 @@
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 import Data.OpenUnion
 
-type MyUnion = Union (Char :| Int :| [()])
+type MyUnion = Union '[Char, Int, [()]]
 
 showMyUnion :: MyUnion -> String
 showMyUnion
