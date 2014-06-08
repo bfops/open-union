@@ -10,7 +10,7 @@
 module Data.OpenUnion.Internal
     ( Union (..)
     , LiftToUnion (..)
-    , Subset
+    , (:<)
     , (:|)
     , (:\)
     , (@>)
@@ -51,12 +51,11 @@ type family s :\ a where
     (a :| s) :\ a = s :\ a
     (a' :| s) :\ a = a' :| (s :\ a)
 
--- | There exists a @Subset s s'@ instance if every type in the list @s@
+-- | There exists a @s :< s'@ instance if every type in the list @s@
 -- has a @`LiftToUnion` s'@ instance.
-class Subset s s'
-instance Subset Void s
-instance Subset s s
-instance (Subset s s', LiftToUnion s' a) => Subset (a :| s) s'
+class (:<) s s'
+instance Void :< s
+instance (s :< s', LiftToUnion s' a) => (a :| s) :< s'
 
 -- | `restrict` in right-fixable style.
 (@>) :: Typeable a => (a -> b) -> (Union (s :\ a) -> b) -> Union s -> b
@@ -70,7 +69,7 @@ restrict (Union d) = maybe (Left $ Union d) Right $ fromDynamic d
 {-# INLINE restrict #-}
 
 -- | Generalize a @Union@.
-reunion :: Subset s s' => Union s -> Union s'
+reunion :: (s :< s') => Union s -> Union s'
 reunion (Union d) = Union d
 {-# INLINE reunion #-}
 
