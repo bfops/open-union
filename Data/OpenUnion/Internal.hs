@@ -4,17 +4,19 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverlappingInstances #-}
-{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE IncoherentInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Data.OpenUnion.Internal
     ( Union (..)
-    , LiftToUnion (..)
     , (:<)
     , (:\)
     , (@>)
-    , reunion
+    , liftUnion
+    , reUnion
     , restrict
     , typesExhausted
     ) where
@@ -29,15 +31,6 @@ newtype Union (s :: [*]) = Union Dynamic
 -- general note: try to keep from re-constructing Unions if an existing one
 -- can just be type-coerced.
 
--- | Typeclass for lifting values to @Union@s.
-class Typeable a => LiftToUnion (s :: [*]) a where
-  liftUnion :: a -> Union s
-  liftUnion = Union . toDyn
-  {-# INLINE liftUnion #-}
-
-instance Typeable a => LiftToUnion (a ': s) a
-instance LiftToUnion s a => LiftToUnion (a' ': s) a
-
 -- | Remove a type from anywhere in the list.
 type family s :\ a where
     '[] :\ a = '[]
@@ -45,10 +38,11 @@ type family s :\ a where
     (a' ': s) :\ a = a' ': (s :\ a)
 
 -- | There exists a @s :< s'@ instance if every type in the list @s@
--- has a @`LiftToUnion` s'@ instance.
+-- can be lifted to @s'@.
 class (:<) (s :: [*]) (s' :: [*])
 instance '[] :< s
-instance (s :< s', LiftToUnion s' a) => (a ': s) :< s'
+instance (s :< s', Typeable a) => (a ': s) :< (a ': s')
+instance (s :< s', '[a] :< s', Typeable a) => (a ': s) :< s'
 
 -- | `restrict` in right-fixable style.
 (@>) :: Typeable a => (a -> b) -> (Union (s :\ a) -> b) -> Union s -> b
@@ -56,15 +50,19 @@ r @> l = either l r . restrict
 infixr 2 @>
 {-# INLINE (@>) #-}
 
+liftUnion :: (Typeable a, '[a] :< s) => a -> Union s
+liftUnion = Union . toDyn
+{-# INLINE liftUnion #-}
+
 -- | Narrow down a @Union@.
 restrict :: Typeable a => Union s -> Either (Union (s :\ a)) a
 restrict (Union d) = maybe (Left $ Union d) Right $ fromDynamic d
 {-# INLINE restrict #-}
 
 -- | Generalize a @Union@.
-reunion :: (s :< s') => Union s -> Union s'
-reunion (Union d) = Union d
-{-# INLINE reunion #-}
+reUnion :: (s :< s') => Union s -> Union s'
+reUnion (Union d) = Union d
+{-# INLINE reUnion #-}
 
 -- | Use this in places where all the @Union@ed options have been exhausted.
 typesExhausted :: Union '[] -> a

@@ -2,10 +2,10 @@
 module Data.OpenUnion
     ( Union
     , (:<)
-    , liftUnion
     , (:\)
     , (@>)
-    , reunion
+    , liftUnion
+    , reUnion
     , restrict
     , typesExhausted
     ) where
