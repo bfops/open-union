@@ -28,6 +28,17 @@ which prints:
     char: 'a'
     list length: 2
 
+The original use case for this library was code like this (snipped from some record/playback logic):
+
+    type TrackStates = '[Stopped, Recording, Playing]
+
+    startRecording
+      :: Union (TrackStates :\ Recording)
+      -> ([Note], Union '[Recording])
+
+The `(:\)` type-level operator is for removal from a set, i.e. `startRecording` can be
+applied to a track in any state except the `Recording` state.
+
 ## N.B.
 Casting to an unrelated type does not cause errors;
 In the above example,`showMyUnion` contains a `String` case despite `MyUnion` not containing

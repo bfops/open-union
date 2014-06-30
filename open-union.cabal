@@ -66,6 +66,17 @@ description:
     >       ‘showMyUnion $ liftUnion "asdf"’
     >     In a stmt of a 'do' block:
     >       putStrLn $ showMyUnion $ liftUnion "asdf"
+    .
+    The original use case for this library was code like this (snipped from some record/playback logic):
+    > type TrackStates = '[Stopped, Recording, Playing]
+    >
+    > startRecording
+    >   :: Union (TrackStates :\ Recording)
+    >   -> ([Note], Union '[Recording])
+    .
+    The `(:\)` type-level operator is for removal from a set, i.e.
+    `startRecording` can be applied to a track in any state except the
+    `Recording` state.
 
 library
     hs-source-dirs:   .
