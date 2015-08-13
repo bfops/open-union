@@ -90,7 +90,7 @@ library
 executable example
     hs-source-dirs:   .
     main-is: example.hs
-    ghc-options: -Wall -fllvm -O2
+    ghc-options: -Wall -O2
     build-depends : base == 4.*
                   , open-union
 
