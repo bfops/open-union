@@ -7,14 +7,15 @@
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE OverlappingInstances #-}
-{-# LANGUAGE IncoherentInstances #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Data.OpenUnion.Internal
     ( Union (..)
     , (:<)
     , (:\)
     , (@>)
+    , (@!>)
     , liftUnion
     , reUnion
     , restrict
@@ -22,6 +23,8 @@ module Data.OpenUnion.Internal
     ) where
 
 import Data.Dynamic
+import Data.Type.Bool
+import GHC.Exts
 
 -- | The @Union@ type - the phantom parameter @s@ is a list of types
 -- denoting what this @Union@ might contain.
@@ -39,16 +42,51 @@ type family s :\ a where
 
 -- | There exists a @s :< s'@ instance if every type in the list @s@
 -- can be lifted to @s'@.
-class (:<) (s :: [*]) (s' :: [*])
-instance '[] :< s
-instance (s :< s', Typeable a) => (a ': s) :< (a ': s')
-instance (s :< s', '[a] :< s', Typeable a) => (a ': s) :< s'
+-- class (:<) (s :: [*]) (s' :: [*])
+
+type (:<) s s' =
+  ( SubList s s'
+  , AllSatisfy Typeable s
+  , AllSatisfy Typeable s')
+
+class NotASubListOf s s'
+
+type SubList s s' = If (SubListB s s')
+                       (() :: Constraint)
+                       (NotASubListOf s s')
+
+type family SubListB (s :: [*]) (s' :: [*]) :: Bool where
+  SubListB '[] s'      = 'True
+  SubListB (a ': as) s = (ElemB a s) && (SubListB as s)
+
+class ElementNotFound a s
+
+-- type Elem a s = DropFalseErr (ElemB a s) (ElementNotFound a s)
+type Elem a s = If (ElemB a s)
+                   (() :: Constraint)
+                   (ElementNotFound a s)
+
+type family ElemB (a :: *) (s :: [*]) :: Bool where
+  ElemB a '[]       = 'False
+  ElemB a (a ': as) = 'True
+  ElemB a (b ': bs) = ElemB a bs
+
+type family AllSatisfy (const :: k -> Constraint) (s :: [k]) :: Constraint where
+  AllSatisfy c '[]       = ()
+  AllSatisfy c (a ': as) = (c a, AllSatisfy c as)
 
 -- | `restrict` in right-fixable style.
 (@>) :: Typeable a => (a -> b) -> (Union (s :\ a) -> b) -> Union s -> b
 r @> l = either l r . restrict
 infixr 2 @>
 {-# INLINE (@>) #-}
+
+(@!>) :: (Typeable a, Elem a s)
+      => (a -> b)
+      -> (Union (s :\ a) -> b)
+      -> Union s -> b
+r @!> l = either l r . restrict
+infixr 2 @!>
 
 liftUnion :: (Typeable a, '[a] :< s) => a -> Union s
 liftUnion = Union . toDyn
