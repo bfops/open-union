@@ -17,3 +17,11 @@ main = do
     putStrLn $ showMyUnion $ liftUnion (4 :: Int)
     putStrLn $ showMyUnion $ liftUnion 'a'
     putStrLn $ showMyUnion $ liftUnion [(), ()]
+    let u1 = liftUnion (4  :: Int) :: MyUnion
+        u2 = liftUnion (10 :: Int) :: MyUnion
+        u3 = liftUnion 'a'         :: MyUnion
+    putStrLn $ show u1
+    putStrLn $ show u3
+    putStrLn $ show $ u1 == u1
+    putStrLn $ show $ u1 == u2
+    putStrLn $ show $ u1 == u3

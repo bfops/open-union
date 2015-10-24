@@ -1,14 +1,15 @@
 -- | Exposed internals for Data.OpenUnion
-{-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE EmptyDataDecls #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE UndecidableInstances #-}
 module Data.OpenUnion.Internal
     ( Union (..)
@@ -27,6 +28,31 @@ import TypeFun.Data.List
 -- denoting what this @Union@ might contain.
 -- The value contained is one of those types.
 newtype Union (s :: [*]) = Union Dynamic
+
+instance Show (Union '[]) where
+  show = typesExhausted
+
+instance (Show a, Show (Union (Delete a as)), Typeable a)
+         => Show (Union (a ': as)) where
+  show u = case restrict u of
+    Left sub       -> show sub
+    Right (a :: a) ->
+       let p = Proxy :: Proxy a
+           rep = typeRep p
+       in "Union (" ++ show a ++ " :: " ++ show rep ++ ")"
+
+instance Eq (Union '[]) where
+  a == _ = typesExhausted a
+
+instance (Typeable a, Eq (Union (Delete a as)), Eq a)
+         => Eq (Union (a ': as)) where
+  u1 == u2 =
+    let r1 = restrict u1
+        r2 = restrict u2
+    in case (r1, r2) of
+       (Right (a :: a), Right (b :: a)) -> a == b
+       (Left  a       , Left  b)        -> a == b
+       _                                -> False
 
 -- general note: try to keep from re-constructing Unions if an existing one
 -- can just be type-coerced.
