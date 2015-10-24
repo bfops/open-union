@@ -85,13 +85,15 @@ library
                   Data.OpenUnion
                   Data.OpenUnion.Internal
 
-    build-depends : base == 4.*
+    build-depends: base == 4.*
+                 , type-fun
 
 executable example
     hs-source-dirs:   .
     main-is: example.hs
     ghc-options: -Wall -O2
     build-depends : base == 4.*
+                  , type-fun
                   , open-union
 
 source-repository head
