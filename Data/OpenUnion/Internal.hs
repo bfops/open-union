@@ -22,7 +22,7 @@ module Data.OpenUnion.Internal
     ) where
 
 import Data.Dynamic
-import TypeFun.Data.List
+import TypeFun.Data.List (SubList, Elem, Delete)
 
 -- | The @Union@ type - the phantom parameter @s@ is a list of types
 -- denoting what this @Union@ might contain.
