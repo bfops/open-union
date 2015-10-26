@@ -21,8 +21,10 @@ module Data.OpenUnion.Internal
     , typesExhausted
     ) where
 
+import Control.Exception
 import Data.Dynamic
 import TypeFun.Data.List (SubList, Elem, Delete)
+import TypeFun.Constraint
 
 -- | The @Union@ type - the phantom parameter @s@ is a list of types
 -- denoting what this @Union@ might contain.
@@ -53,6 +55,29 @@ instance (Typeable a, Eq (Union (Delete a as)), Eq a)
        (Right (a :: a), Right (b :: a)) -> a == b
        (Left  a       , Left  b)        -> a == b
        _                                -> False
+
+instance (Exception e) => Exception (Union (e ': '[])) where
+  toException u = case restrict u of
+    Left (sub :: Union '[]) -> typesExhausted sub
+    Right (e  :: e)         -> toException e
+  fromException some = case fromException some of
+    Just (e :: e) -> Just (liftUnion e)
+    Nothing       -> Nothing
+
+instance ( Exception e, Typeable e, Typeable es, Typeable e1
+         , Exception (Union (Delete e (e1 ': es)))
+         , SubList (Delete e (e1 ': es)) (e ': e1 ': es) )
+         => Exception (Union (e ': e1 ': es)) where
+  toException u = case restrict u of
+    Left (sub :: Union (Delete e (e1 ': es))) -> toException sub
+    Right (e  :: e)                   -> toException e
+
+  fromException some = case fromException some of
+    Just (e :: e) -> Just (liftUnion e)
+    Nothing ->
+      let sub :: Maybe (Union (Delete e (e1 ': es)))
+          sub = fromException some
+      in fmap reUnion sub
 
 -- general note: try to keep from re-constructing Unions if an existing one
 -- can just be type-coerced.
