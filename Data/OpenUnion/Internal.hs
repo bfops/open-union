@@ -24,7 +24,6 @@ module Data.OpenUnion.Internal
 import Control.Exception
 import Data.Dynamic
 import TypeFun.Data.List (SubList, Elem, Delete)
-import TypeFun.Constraint
 
 -- | The @Union@ type - the phantom parameter @s@ is a list of types
 -- denoting what this @Union@ might contain.
@@ -52,9 +51,23 @@ instance (Typeable a, Eq (Union (Delete a as)), Eq a)
     let r1 = restrict u1
         r2 = restrict u2
     in case (r1, r2) of
-       (Right (a :: a), Right (b :: a)) -> a == b
+       (Right (a :: a), Right b) -> a == b
        (Left  a       , Left  b)        -> a == b
        _                                -> False
+
+instance Ord (Union '[]) where
+  compare a _ = typesExhausted a
+
+instance (Ord a, Typeable a, Ord (Union (Delete a as)))
+         => Ord (Union (a ': as)) where
+  compare u1 u2 =
+    let r1 = restrict u1
+        r2 = restrict u2
+    in case (r1, r2) of
+       (Right (a :: a), Right b) -> compare a b
+       (Left a        , Left b)  -> compare a b
+       (Right _       , Left _)  -> GT
+       (Left  _       , Right _)  -> LT
 
 instance (Exception e) => Exception (Union (e ': '[])) where
   toException u = case restrict u of
