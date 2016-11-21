@@ -1,5 +1,5 @@
 name:               open-union
-version:            0.1.0.1
+version:            0.2.0.0
 synopsis:           Extensible, type-safe unions.
 category:           Data
 license:            MIT
