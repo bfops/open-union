@@ -4,8 +4,8 @@ synopsis:           Extensible, type-safe unions.
 category:           Data
 license:            MIT
 license-file:       LICENSE
-author:             Ben Foppa
-homepage:           https://github.com/RobotGymnast/open-union
+author:             Zeke Foppa
+homepage:           https://github.com/bfopa/open-union
 maintainer:         benjamin.foppa@gmail.com
 build-type:         Simple
 cabal-version:      >= 1.9.2
