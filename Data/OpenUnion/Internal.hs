@@ -1,4 +1,5 @@
 -- | Exposed internals for Data.OpenUnion
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE EmptyDataDecls #-}
@@ -24,6 +25,10 @@ module Data.OpenUnion.Internal
 import Control.Exception
 import Data.Dynamic
 import TypeFun.Data.List (SubList, Elem, Delete)
+#if MIN_VERSION_base(4,10,0)
+import Data.Proxy
+import Data.Typeable
+#endif
 
 -- | The @Union@ type - the phantom parameter @s@ is a list of types
 -- denoting what this @Union@ might contain.
