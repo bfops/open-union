@@ -5,7 +5,7 @@ category:           Data
 license:            MIT
 license-file:       LICENSE
 author:             Zeke Foppa
-homepage:           https://github.com/bfopa/open-union
+homepage:           https://github.com/bfops/open-union
 maintainer:         benjamin.foppa@gmail.com
 build-type:         Simple
 cabal-version:      >= 1.9.2
