@@ -18,13 +18,14 @@ module Data.OpenUnion.Internal
     , (@!>)
     , liftUnion
     , reUnion
+    , flattenUnion
     , restrict
     , typesExhausted
     ) where
 
 import Control.Exception
 import Data.Dynamic
-import TypeFun.Data.List (SubList, Elem, Delete)
+import TypeFun.Data.List (SubList, Elem, Delete, (:++:))
 #if MIN_VERSION_base(4,10,0)
 import Data.Proxy
 import Data.Typeable
@@ -97,6 +98,12 @@ instance ( Exception e, Typeable e, Typeable es, Typeable e1
           sub = fromException some
       in fmap reUnion sub
 
+
+type family FlatElems a :: [*] where
+  FlatElems '[]              = '[]
+  FlatElems ((Union s) : ss) = s :++: FlatElems ss
+  FlatElems (x : s)          = x : FlatElems s
+
 -- general note: try to keep from re-constructing Unions if an existing one
 -- can just be type-coerced.
 
@@ -133,6 +140,11 @@ restrict (Union d) = maybe (Left $ Union d) Right $ fromDynamic d
 reUnion :: (SubList s s') => Union s -> Union s'
 reUnion (Union d) = Union d
 {-# INLINE reUnion #-}
+
+-- | Flatten a @Union@.
+flattenUnion :: Union s -> Union (FlatElems s)
+flattenUnion (Union d) = Union d
+{-# INLINE flattenUnion #-}
 
 -- | Use this in places where all the @Union@ed options have been exhausted.
 typesExhausted :: Union '[] -> a
