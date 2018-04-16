@@ -19,6 +19,7 @@ module Data.OpenUnion.Internal
     , liftUnion
     , reUnion
     , flatUnion
+    , flattenUnion
     , restrict
     , typesExhausted
     ) where
@@ -98,6 +99,12 @@ instance ( Exception e, Typeable e, Typeable es, Typeable e1
           sub = fromException some
       in fmap reUnion sub
 
+
+type family FlatElems a :: [*] where
+  FlatElems '[]              = '[]
+  FlatElems ((Union s) : ss) = s :++: FlatElems ss
+  FlatElems (x : s)          = x : FlatElems s
+
 -- general note: try to keep from re-constructing Unions if an existing one
 -- can just be type-coerced.
 
@@ -139,6 +146,11 @@ reUnion (Union d) = Union d
 flatUnion :: Union (Union s : a) -> Union (s :++: a)
 flatUnion (Union d) = Union d
 {-# INLINE flatUnion #-}
+
+-- | Flatten a @Union@.
+flattenUnion :: Union s -> Union (FlatElems s)
+flattenUnion (Union d) = Union d
+{-# INLINE flattenUnion #-}
 
 -- | Use this in places where all the @Union@ed options have been exhausted.
 typesExhausted :: Union '[] -> a
