@@ -4,7 +4,6 @@ module Data.OpenUnion
     , (@>)
     , liftUnion
     , reUnion
-    , flatUnion
     , flattenUnion
     , restrict
     , typesExhausted

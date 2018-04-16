@@ -18,7 +18,6 @@ module Data.OpenUnion.Internal
     , (@!>)
     , liftUnion
     , reUnion
-    , flatUnion
     , flattenUnion
     , restrict
     , typesExhausted
@@ -141,11 +140,6 @@ restrict (Union d) = maybe (Left $ Union d) Right $ fromDynamic d
 reUnion :: (SubList s s') => Union s -> Union s'
 reUnion (Union d) = Union d
 {-# INLINE reUnion #-}
-
--- | Flat a @Union@.
-flatUnion :: Union (Union s : a) -> Union (s :++: a)
-flatUnion (Union d) = Union d
-{-# INLINE flatUnion #-}
 
 -- | Flatten a @Union@.
 flattenUnion :: Union s -> Union (FlatElems s)
