@@ -1,26 +1,30 @@
+# open-union
+
 ## Intro
 
 open-union adds type-safe extensible unions to Haskell, which can be used a la:
 
-    {-# LANGUAGE TypeOperators #-}
-    {-# LANGUAGE ScopedTypeVariables #-}
-    import Data.OpenUnion
+```hs
+{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+import Data.OpenUnion
 
-    type MyUnion = Union (Char :| Int :| [()])
+type MyUnion = Union (Char :| Int :| [()])
 
-    showMyUnion :: MyUnion -> String
-    showMyUnion
-        =  (\(c :: Char) -> "char: " ++ show c)
-        @> (\(i :: Int) -> "int: " ++ show i)
-        @> (\(l :: [()]) -> "list length: " ++ show (length l))
-        @> (\(s :: String) -> "string: " ++ s)
-        @> typesExhausted
+showMyUnion :: MyUnion -> String
+showMyUnion
+    =  (\(c :: Char) -> "char: " ++ show c)
+    @> (\(i :: Int) -> "int: " ++ show i)
+    @> (\(l :: [()]) -> "list length: " ++ show (length l))
+    @> (\(s :: String) -> "string: " ++ s)
+    @> typesExhausted
 
-    main :: IO ()
-    main = do
-        putStrLn $ showMyUnion $ liftUnion (4 :: Int)
-        putStrLn $ showMyUnion $ liftUnion 'a'
-        putStrLn $ showMyUnion $ liftUnion [(), ()]
+main :: IO ()
+main = do
+    putStrLn $ showMyUnion $ liftUnion (4 :: Int)
+    putStrLn $ showMyUnion $ liftUnion 'a'
+    putStrLn $ showMyUnion $ liftUnion [(), ()]
+```
 
 which prints:
 
@@ -30,11 +34,13 @@ which prints:
 
 The original use case for this library was code like this (snipped from some record/playback logic):
 
-    type TrackStates = '[Stopped, Recording, Playing]
+```hs
+type TrackStates = '[Stopped, Recording, Playing]
 
-    startRecording
-      :: Union (TrackStates :\ Recording)
-      -> ([Note], Union '[Recording])
+startRecording
+    :: Union (TrackStates :\ Recording)
+    -> ([Note], Union '[Recording])
+```
 
 The `(:\)` type-level operator is for removal from a set, i.e. `startRecording` can be
 applied to a track in any state except the `Recording` state.
